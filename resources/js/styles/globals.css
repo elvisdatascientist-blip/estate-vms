@@ -1,0 +1,438 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ─── Design Tokens — ACR-Inspired Premium Property Theme ──── */
+:root {
+  /* Primary — Deep Charcoal / Slate */
+  --brand-900: #1a1a2e;
+  --brand-800: #1f2937;
+  --brand-700: #2d3748;
+  --brand-600: #374151;
+  --brand-500: #4a5568;
+  --brand-400: #718096;
+  --brand-200: #cbd5e0;
+  --brand-100: #e2e8f0;
+  --brand-50:  #f7fafc;
+
+  /* Accent — Warm Gold */
+  --accent:    #c9a84c;
+  --accent-dk: #b08d3a;
+  --accent-lt: #f5e6b8;
+  --accent-bg: #fdf8ec;
+
+  /* Success */
+  --success-bg: #ecfdf5;
+  --success:    #059669;
+  --success-dk: #047857;
+
+  /* Warning */
+  --warning-bg: #fffbeb;
+  --warning:    #d97706;
+
+  /* Danger */
+  --danger-bg:  #fef2f2;
+  --danger:     #dc2626;
+  --danger-dk:  #b91c1c;
+
+  /* Pending */
+  --pending-bg: #fff7ed;
+  --pending:    #ea580c;
+
+  /* Neutrals — Warm Gray */
+  --gray-50:  #fafaf9;
+  --gray-100: #f5f5f4;
+  --gray-200: #e7e5e4;
+  --gray-300: #d6d3d1;
+  --gray-400: #a8a29e;
+  --gray-500: #78716c;
+  --gray-600: #57534e;
+  --gray-700: #44403c;
+  --gray-800: #292524;
+  --gray-900: #1c1917;
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Shadows — softer, warmer */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.03);
+  --shadow:     0 4px 16px rgba(0,0,0,.06), 0 2px 4px rgba(0,0,0,.03);
+  --shadow-lg:  0 16px 40px rgba(0,0,0,.1), 0 4px 12px rgba(0,0,0,.04);
+
+  /* Layout */
+  --sidebar-w:  256px;
+  --topbar-h:   60px;
+  --transition: 180ms cubic-bezier(.4,0,.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--gray-50);
+  color: var(--gray-900);
+  line-height: 1.6;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+
+/* ─── Focus ──────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Selection ──────────────────────────────────────────────── */
+::selection {
+  background: var(--accent-lt);
+  color: var(--gray-900);
+}
+
+/* ─── Modern Animations ───────────────────────────────────────── */
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-slide-up { animation: slideInUp 0.4s ease-out; }
+.animate-slide-down { animation: slideInDown 0.4s ease-out; }
+.animate-slide-in-left { animation: slideInLeft 0.3s ease-out; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+
+/* ─── Glass Morphism Effects ───────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(26, 26, 46, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Enhanced Button Styles ─────────────────────────────────── */
+.btn-gradient {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dk) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-gradient:hover::before {
+  left: 100%;
+}
+
+/* ─── Card Enhancements ───────────────────────────────────────── */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+}
+
+/* ─── Skeleton Loading ───────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ─── Modern Modal Animation ─────────────────────────────────── */
+@keyframes modalIn {
+  from { 
+    transform: scale(0.95) translateY(10px);
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-modal {
+  animation: modalIn 0.3s ease-out;
+}
+
+/* ─── Enhanced Form Elements ─────────────────────────────────── */
+.input-group {
+  position: relative;
+}
+
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label {
+  transform: translateY(-25px) scale(0.85);
+  color: var(--accent);
+}
+
+.floating-label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: all 0.2s ease;
+  pointer-events: none;
+  color: var(--gray-400);
+  background: white;
+  padding: 0 4px;
+}
+
+/* ─── Status Indicators ───────────────────────────────────────── */
+.status-dot {
+  position: relative;
+}
+
+.status-dot::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.status-online::before { background: #10b981; }
+.status-offline::before { background: #6b7280; }
+.status-busy::before { background: #f59e0b; }
+
+/* ─── Modern Badges ─────────────────────────────────────────── */
+.badge-glow {
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.3);
+}
+
+/* ─── Enhanced Tables ───────────────────────────────────────── */
+.table-row-hover {
+  transition: all 0.2s ease;
+}
+
+.table-row-hover:hover {
+  background: linear-gradient(90deg, rgba(201, 168, 76, 0.05) 0%, rgba(201, 168, 76, 0.02) 100%);
+  transform: translateX(2px);
+}
+
+/* ─── Responsive Typography ──────────────────────────────────── */
+@media (max-width: 768px) {
+  html { font-size: 14px; }
+  
+  /* Mobile sidebar adjustments */
+  .mobile-sidebar {
+    width: 100vw;
+    max-width: 320px;
+  }
+  
+  /* Mobile card spacing */
+  .mobile-card {
+    margin: 0 -1rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  
+  /* Mobile stat cards */
+  .mobile-stat-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  /* Mobile table adjustments */
+  .mobile-table {
+    font-size: 0.875rem;
+  }
+  
+  .mobile-table th,
+  .mobile-table td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  /* Mobile buttons */
+  .mobile-button-full {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Mobile form adjustments */
+  .mobile-form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  /* Mobile modal adjustments */
+  .mobile-modal {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+  
+  /* Mobile dashboard spacing */
+  .mobile-dashboard-spacing > * + * {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  html { font-size: 13px; }
+  
+  /* Extra small mobile adjustments */
+  .mobile-xs-card {
+    padding: 1rem;
+  }
+  
+  .mobile-xs-text {
+    font-size: 0.8125rem;
+  }
+  
+  .mobile-xs-header {
+    font-size: 1.25rem;
+  }
+}
+
+/* ─── Touch-friendly interactions ───────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .card-hover:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  /* Increase touch targets */
+  button, a, input, select, textarea {
+    min-height: 44px;
+  }
+  
+  /* Touch-friendly button spacing */
+  .touch-button {
+    padding: 0.75rem 1rem;
+    margin: 0.25rem;
+  }
+  
+  /* Touch-friendly table rows */
+  .touch-table-row {
+    min-height: 48px;
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+/* ─── High DPI displays ───────────────────────────────────── */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Sharper borders on high DPI */
+  .border-sharp {
+    border-width: 0.5px;
+  }
+  
+  /* Crisper shadows */
+  .shadow-crisp {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06);
+  }
+}
+
+/* ─── Reduce motion for accessibility ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable animations */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  /* Keep essential transitions */
+  .essential-transition {
+    transition: opacity 0.2s ease;
+  }
+}
+
+/* ─── Dark Mode Support (Future) ─────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  /* Dark mode styles can be added here */
+  
+  /* Example dark mode variables */
+  :root {
+    --dark-bg: #0f172a;
+    --dark-surface: #1e293b;
+    --dark-border: #334155;
+    --dark-text: #f1f5f9;
+    --dark-text-secondary: #94a3b8;
+  }
+}
+
+/* ─── Print styles ───────────────────────────────────────────── */
+@media print {
+  /* Hide navigation and non-essential elements */
+  nav, header, button, .no-print {
+    display: none !important;
+  }
+  
+  /* Optimize content for printing */
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+    color: black;
+    background: white;
+  }
+  
+  /* Ensure QR codes print well */
+  .qr-print {
+    page-break-inside: avoid;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+  
+  /* Print-friendly cards */
+  .print-card {
+    border: 1px solid #ccc;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+}
