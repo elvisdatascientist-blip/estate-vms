@@ -25,7 +25,7 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Install JS dependencies
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install
 
 # Copy app source and build frontend
 COPY . .
