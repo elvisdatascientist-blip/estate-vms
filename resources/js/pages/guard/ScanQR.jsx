@@ -1,126 +1,187 @@
-import React, { useState, useRef } from 'react';
-import { router } from '@inertiajs/react';
+import React, { useState } from 'react';
+import { Head, router } from '@inertiajs/react';
 import AppLayout, { PageHeader } from '@/components/layout/AppLayout';
-import { Card, Badge, Button, Alert } from '@/components/ui';
-
-/* 
-  In production, integrate a QR scanner library such as:
-    - html5-qrcode  (npm i html5-qrcode)
-    - @zxing/library
-  The onScanSuccess callback receives the decoded string (visitor token/uuid).
-  That token is then posted to /guard/scan/verify to fetch visitor details.
-*/
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import {
+  ScanLine,
+  CheckCircle,
+  ArrowLeft,
+  LayoutDashboard,
+} from 'lucide-react';
 
 export default function ScanQR({ auth, flash = {}, scanned = null }) {
-  const [scanning, setScanning]   = useState(false);
   const [checkedIn, setCheckedIn] = useState(false);
 
   const handleCheckIn = () => {
-    router.patch(`/guard/visitors/${scanned.id}/checkin`, {}, {
-      onSuccess: () => setCheckedIn(true),
-    });
+    router.patch(
+      `/guard/visitors/${scanned.id}/checkin`,
+      {},
+      { onSuccess: () => setCheckedIn(true) },
+    );
+  };
+
+  const statusBadge = (status) => {
+    switch (status) {
+      case 'pending':
+        return (
+          <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
+            pending
+          </Badge>
+        );
+      case 'checked-in':
+        return (
+          <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50">
+            checked in
+          </Badge>
+        );
+      case 'checked-out':
+        return <Badge variant="secondary">checked out</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
   return (
     <AppLayout user={auth.user} role="guard">
+      <Head title="Scan QR Code" />
+
       <PageHeader
         title="Scan QR code"
         subtitle="Point the camera at the visitor's QR code to verify their invitation"
       />
 
+      {/* Scanner UI */}
       {!scanned && !checkedIn && (
         <Card className="max-w-md mx-auto">
-          {/* Camera viewfinder mockup — replace with <Html5QrcodeScanner> in production */}
-          <div
-            className="relative aspect-square w-full max-w-xs mx-auto rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center cursor-pointer mb-4"
-            onClick={() => {
-              /* In real app: start html5-qrcode scanner here */
-              router.get('/guard/scan?demo=1');
-            }}
-          >
-            {/* Corner brackets */}
-            {['top-3 left-3', 'top-3 right-3 rotate-90', 'bottom-3 right-3 rotate-180', 'bottom-3 left-3 -rotate-90'].map((pos, i) => (
-              <div key={i} className={`absolute ${pos} w-8 h-8 border-white`}
-                style={{ borderWidth: '3px 0 0 3px', borderStyle: 'solid', borderRadius: '2px 0 0 2px' }} />
-            ))}
-
-            {/* Scan line animation */}
-            <div className="absolute inset-x-0 h-0.5 bg-brand-400 opacity-70 animate-scan" style={{
-              animation: 'scanline 2s linear infinite',
-              top: '50%',
-            }} />
-
-            <div className="text-center text-white">
-              <div className="text-5xl mb-3 opacity-50">⬡</div>
-              <p className="text-sm opacity-60">Tap to start camera</p>
-              <p className="text-xs opacity-40 mt-1">(or click to simulate scan)</p>
-            </div>
-          </div>
-
-          <p className="text-xs text-center text-gray-400">
-            Position the visitor's QR code within the frame. The scan happens automatically.
-          </p>
-        </Card>
-      )}
-
-      {/* Verification result */}
-      {scanned && !checkedIn && (
-        <div className="max-w-md mx-auto space-y-4">
-          <Card>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-sm">✓</div>
-              <p className="text-sm font-semibold text-green-700">Valid invitation found</p>
-            </div>
-
-            <div className="bg-gray-50 rounded-xl p-4 space-y-2.5 mb-4">
+          <CardContent className="pt-6">
+            <div
+              className="relative aspect-square w-full max-w-xs mx-auto rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center cursor-pointer mb-4"
+              onClick={() => router.get('/guard/scan?demo=1')}
+            >
+              {/* Corner brackets */}
               {[
-                ['Visitor name',  scanned.name],
-                ['ID number',     scanned.id_number],
-                ['Purpose',       scanned.purpose],
-                ['Visiting unit', `Unit ${scanned.unit}`],
-                ['Tenant',        scanned.tenant_name],
-                ['Valid from',    `${scanned.time_in} – ${scanned.time_out}`],
-              ].map(([label, value]) => (
-                <div key={label} className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">{label}</span>
-                  <span className="font-medium text-gray-800">{value}</span>
-                </div>
+                'top-3 left-3',
+                'top-3 right-3 rotate-90',
+                'bottom-3 right-3 rotate-180',
+                'bottom-3 left-3 -rotate-90',
+              ].map((pos, i) => (
+                <div
+                  key={i}
+                  className={`absolute ${pos} w-8 h-8 border-white`}
+                  style={{
+                    borderWidth: '3px 0 0 3px',
+                    borderStyle: 'solid',
+                    borderRadius: '2px 0 0 2px',
+                  }}
+                />
               ))}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Status</span>
-                <Badge variant={scanned.status}>{scanned.status}</Badge>
+
+              {/* Scan line animation */}
+              <div
+                className="absolute inset-x-6 h-0.5 bg-emerald-400 opacity-70"
+                style={{ animation: 'scanline 2s linear infinite', top: '50%' }}
+              />
+
+              <div className="text-center text-white">
+                <ScanLine className="size-12 mx-auto mb-3 opacity-50" />
+                <p className="text-sm opacity-60">Tap to start camera</p>
+                <p className="text-xs opacity-40 mt-1">(or click to simulate scan)</p>
               </div>
             </div>
 
-            <Button variant="success" className="w-full justify-center" onClick={handleCheckIn}>
-              ✓ Check in visitor
-            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Position the visitor's QR code within the frame. The scan happens automatically.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Scanned result */}
+      {scanned && !checkedIn && (
+        <div className="max-w-md mx-auto space-y-4">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex size-6 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                  <CheckCircle className="size-4" />
+                </div>
+                <p className="text-sm font-semibold text-emerald-700">Valid invitation found</p>
+              </div>
+
+              <div className="rounded-xl border bg-muted/40 p-4 space-y-2.5 mb-4">
+                {[
+                  ['Visitor name', scanned.name],
+                  ['ID number', scanned.id_number],
+                  ['Purpose', scanned.purpose],
+                  ['Visiting unit', `Unit ${scanned.unit}`],
+                  ['Tenant', scanned.tenant_name],
+                  ['Valid from', `${scanned.time_in} \u2013 ${scanned.time_out}`],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className="font-medium">{value}</span>
+                  </div>
+                ))}
+                <Separator />
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Status</span>
+                  {statusBadge(scanned.status)}
+                </div>
+              </div>
+
+              <Button className="w-full" onClick={handleCheckIn}>
+                <CheckCircle className="size-4 mr-2" />
+                Check in visitor
+              </Button>
+            </CardContent>
           </Card>
 
-          <Button variant="ghost" className="w-full justify-center" onClick={() => router.get('/guard/scan')}>
-            ← Scan another
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={() => router.get('/guard/scan')}
+          >
+            <ArrowLeft className="size-4 mr-2" />
+            Scan another
           </Button>
         </div>
       )}
 
-      {/* Success */}
+      {/* Success state */}
       {checkedIn && (
         <div className="max-w-md mx-auto">
-          <Card className="text-center py-8">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">✓</div>
-            <p className="text-lg font-semibold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-display)' }}>
-              {scanned?.name} checked in
-            </p>
-            <p className="text-sm text-gray-500 mb-1">Visitor is now inside the estate</p>
-            <p className="text-xs text-green-600 mb-6">SMS notification sent to tenant in Unit {scanned?.unit}</p>
-            <div className="flex gap-3">
-              <Button variant="primary" className="flex-1 justify-center" onClick={() => router.get('/guard/scan')}>
-                Scan another
-              </Button>
-              <Button variant="ghost" className="flex-1 justify-center" onClick={() => router.get('/guard/dashboard')}>
-                Dashboard
-              </Button>
-            </div>
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <div className="flex size-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mx-auto mb-4">
+                <CheckCircle className="size-8" />
+              </div>
+              <p className="text-lg font-semibold mb-1">
+                {scanned?.name} checked in
+              </p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Visitor is now inside the estate
+              </p>
+              <p className="text-xs text-emerald-600 mb-6">
+                SMS notification sent to tenant in Unit {scanned?.unit}
+              </p>
+              <div className="flex gap-3">
+                <Button className="flex-1" onClick={() => router.get('/guard/scan')}>
+                  <ScanLine className="size-4 mr-2" />
+                  Scan another
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => router.get('/guard/dashboard')}
+                >
+                  <LayoutDashboard className="size-4 mr-2" />
+                  Dashboard
+                </Button>
+              </div>
+            </CardContent>
           </Card>
         </div>
       )}

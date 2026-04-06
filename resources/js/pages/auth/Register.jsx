@@ -1,15 +1,18 @@
 import React from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
-import { Input, Button, Select, Alert } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 export default function Register({ flash = {} }) {
   const { data, setData, post, processing, errors } = useForm({
-    name:                  '',
-    email:                 '',
-    phone:                 '',
-    unit:                  '',
-    block:                 '',
-    password:              '',
+    name: '',
+    email: '',
+    phone: '',
+    unit: '',
+    block: '',
+    password: '',
     password_confirmation: '',
   });
 
@@ -22,98 +25,150 @@ export default function Register({ flash = {} }) {
     <>
       <Head title="Create account — GreenPark Estate" />
 
-      <div className="min-h-screen flex items-center justify-center p-5" style={{ background: 'var(--gray-50)' }}>
+      <div className="min-h-screen flex items-center justify-center p-5 bg-muted/30">
         <div className="w-full max-w-lg">
-          {/* Header */}
+          {/* Logo */}
           <div className="text-center mb-8">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold mx-auto mb-5"
-              style={{ background: 'var(--brand-900)', color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>GP</div>
-            <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'var(--font-display)' }}>Create your account</h1>
-            <p className="text-sm text-gray-500 mt-1.5">Join the GreenPark Estate resident portal</p>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold mx-auto mb-5 bg-primary text-primary-foreground">
+              GP
+            </div>
+            <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
+            <p className="text-sm text-muted-foreground mt-1.5">Join the GreenPark Estate resident portal</p>
           </div>
 
-          {flash.error && <div className="mb-5"><Alert type="danger">{flash.error}</Alert></div>}
+          {flash.error && (
+            <div className="mb-5 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {flash.error}
+            </div>
+          )}
 
-          <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm p-8">
-            <form onSubmit={submit} className="space-y-5">
-              <Input
-                label="Full name"
-                placeholder="Your full name as on ID"
-                value={data.name}
-                onChange={e => setData('name', e.target.value)}
-                error={errors.name}
-              />
+          <Card>
+            <CardContent className="pt-6">
+              <form onSubmit={submit} className="space-y-4">
+                {/* Full name */}
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Your full name as on ID"
+                    value={data.name}
+                    onChange={(e) => setData('name', e.target.value)}
+                  />
+                  {errors.name && (
+                    <p className="text-sm text-destructive">{errors.name}</p>
+                  )}
+                </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Input
-                  label="Email address"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={data.email}
-                  onChange={e => setData('email', e.target.value)}
-                  error={errors.email}
-                />
-                <Input
-                  label="Phone number"
-                  type="tel"
-                  placeholder="07XXXXXXXX"
-                  value={data.phone}
-                  onChange={e => setData('phone', e.target.value)}
-                  error={errors.phone}
-                />
-              </div>
+                {/* Email + Phone */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={data.email}
+                      onChange={(e) => setData('email', e.target.value)}
+                    />
+                    {errors.email && (
+                      <p className="text-sm text-destructive">{errors.email}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="07XXXXXXXX"
+                      value={data.phone}
+                      onChange={(e) => setData('phone', e.target.value)}
+                    />
+                    {errors.phone && (
+                      <p className="text-sm text-destructive">{errors.phone}</p>
+                    )}
+                  </div>
+                </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Select
-                  label="Block"
-                  value={data.block}
-                  onChange={e => setData('block', e.target.value)}
-                  error={errors.block}
-                >
-                  <option value="">Select block...</option>
-                  {['A', 'B', 'C', 'D', 'E'].map(b => <option key={b} value={b}>Block {b}</option>)}
-                </Select>
-                <Input
-                  label="Unit number"
-                  placeholder="e.g. 4, 12A..."
-                  value={data.unit}
-                  onChange={e => setData('unit', e.target.value)}
-                  error={errors.unit}
-                />
-              </div>
+                {/* Block + Unit */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="block">Block</Label>
+                    <select
+                      id="block"
+                      value={data.block}
+                      onChange={(e) => setData('block', e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    >
+                      <option value="">Select block...</option>
+                      {['A', 'B', 'C', 'D', 'E'].map((b) => (
+                        <option key={b} value={b}>Block {b}</option>
+                      ))}
+                    </select>
+                    {errors.block && (
+                      <p className="text-sm text-destructive">{errors.block}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="unit">Unit number</Label>
+                    <Input
+                      id="unit"
+                      placeholder="e.g. 4, 12A..."
+                      value={data.unit}
+                      onChange={(e) => setData('unit', e.target.value)}
+                    />
+                    {errors.unit && (
+                      <p className="text-sm text-destructive">{errors.unit}</p>
+                    )}
+                  </div>
+                </div>
 
-              <div className="pt-4 space-y-4" style={{ borderTop: '1px solid var(--gray-200)' }}>
-                <Input
-                  label="Password"
-                  type="password"
-                  placeholder="At least 8 characters"
-                  value={data.password}
-                  onChange={e => setData('password', e.target.value)}
-                  error={errors.password}
-                />
-                <Input
-                  label="Confirm password"
-                  type="password"
-                  placeholder="Repeat your password"
-                  value={data.password_confirmation}
-                  onChange={e => setData('password_confirmation', e.target.value)}
-                  error={errors.password_confirmation}
-                />
-              </div>
+                {/* Password section */}
+                <div className="pt-4 border-t border-border space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="At least 8 characters"
+                      value={data.password}
+                      onChange={(e) => setData('password', e.target.value)}
+                    />
+                    {errors.password && (
+                      <p className="text-sm text-destructive">{errors.password}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password_confirmation">Confirm password</Label>
+                    <Input
+                      id="password_confirmation"
+                      type="password"
+                      placeholder="Repeat your password"
+                      value={data.password_confirmation}
+                      onChange={(e) => setData('password_confirmation', e.target.value)}
+                    />
+                    {errors.password_confirmation && (
+                      <p className="text-sm text-destructive">{errors.password_confirmation}</p>
+                    )}
+                  </div>
+                </div>
 
-              <div className="rounded-xl p-3.5 text-xs font-medium" style={{ background: 'var(--accent-bg, #fdf8ec)', color: '#92700c', border: '1px solid #f5e6b8' }}>
-                Your account will require admin approval before you can invite visitors.
-              </div>
+                {/* Admin approval notice */}
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-800">
+                  Your account will require admin approval before you can invite visitors.
+                </div>
 
-              <Button type="submit" variant="primary" loading={processing} className="w-full justify-center" style={{ height: 44 }}>
-                Create account
-              </Button>
-            </form>
-          </div>
+                <Button type="submit" className="w-full" disabled={processing}>
+                  {processing ? 'Creating account...' : 'Create account'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-          <p className="text-sm text-center text-gray-500 mt-6">
+          <p className="text-sm text-center text-muted-foreground mt-6">
             Already have an account?{' '}
-            <Link href="/login" className="font-semibold transition-colors" style={{ color: 'var(--brand-700)' }}>Sign in</Link>
+            <Link href="/login" className="font-semibold text-primary hover:underline">
+              Sign in
+            </Link>
           </p>
         </div>
       </div>

@@ -1,20 +1,86 @@
 import React, { useState } from 'react';
-import { useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import AppLayout, { PageHeader } from '@/components/layout/AppLayout';
-import { Card, CardHeader, Input, Select, Button, Alert, QRCode } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, Send, Copy, Printer, QrCode } from 'lucide-react';
+
+/**
+ * Simple deterministic QR-like SVG pattern generator.
+ * NOT a real QR code -- just a visual placeholder grid.
+ */
+function QRCodeSVG({ value, size = 120 }) {
+  const cells = 21;
+  const cellSize = size / cells;
+
+  // Simple hash to create a deterministic pattern
+  let hash = 0;
+  const str = String(value || '');
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+
+  const grid = [];
+  for (let row = 0; row < cells; row++) {
+    for (let col = 0; col < cells; col++) {
+      // Fixed patterns for corners (finder patterns)
+      const inTopLeft = row < 7 && col < 7;
+      const inTopRight = row < 7 && col >= cells - 7;
+      const inBottomLeft = row >= cells - 7 && col < 7;
+
+      let filled = false;
+      if (inTopLeft || inTopRight || inBottomLeft) {
+        const lr = inTopLeft ? row : inBottomLeft ? row - (cells - 7) : row;
+        const lc = inTopLeft ? col : inTopRight ? col - (cells - 7) : col;
+        filled =
+          lr === 0 || lr === 6 || lc === 0 || lc === 6 ||
+          (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
+      } else {
+        const seed = ((hash + row * 31 + col * 17) >>> 0) % 100;
+        filled = seed < 45;
+      }
+
+      if (filled) {
+        grid.push(
+          <rect
+            key={`${row}-${col}`}
+            x={col * cellSize}
+            y={row * cellSize}
+            width={cellSize}
+            height={cellSize}
+            fill="currentColor"
+          />
+        );
+      }
+    }
+  }
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="text-foreground"
+    >
+      {grid}
+    </svg>
+  );
+}
 
 export default function InviteVisitor({ auth, flash = {} }) {
   const [qrGenerated, setQrGenerated] = useState(false);
   const [smsSent, setSmsSent] = useState(false);
 
   const { data, setData, post, processing, errors, reset } = useForm({
-    name:      '',
+    name: '',
     id_number: '',
-    phone:     '',
-    purpose:   '',
-    time_in:   '09:00',
-    time_out:  '17:00',
-    date:      new Date().toISOString().slice(0, 10),
+    phone: '',
+    purpose: '',
+    time_in: '09:00',
+    time_out: '17:00',
+    date: new Date().toISOString().slice(0, 10),
   });
 
   const handleSubmit = (e) => {
@@ -25,186 +91,211 @@ export default function InviteVisitor({ auth, flash = {} }) {
   };
 
   const handleSendSms = () => {
-    // POST /tenant/visitors/{id}/send-sms  — wire up after form submission
     setSmsSent(true);
   };
 
+  const selectClass =
+    'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
+
   return (
     <AppLayout user={auth.user} role="tenant">
+      <Head title="Invite a Visitor" />
+
       <PageHeader
         title="Invite a visitor"
         subtitle="Fill in the details below. A QR code will be generated and can be sent to your guest."
       />
 
-      {flash.success && <div className="mb-5 animate-slide-down"><Alert type="success">{flash.success}</Alert></div>}
+      {flash.success && (
+        <div className="mb-5 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <CheckCircle className="size-4 shrink-0" />
+          {flash.success}
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Form */}
         <div className="lg:col-span-3">
-          <Card className="animate-slide-up">
-            <CardHeader 
-              title="Visitor details" 
-              subtitle="All fields are required for security purposes" 
-            />
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Input
-                  label="Full name"
-                  placeholder="e.g. James Mwangi"
-                  value={data.name}
-                  onChange={e => setData('name', e.target.value)}
-                  error={errors.name}
-                  floating
-                />
-                <Input
-                  label="ID / Passport number"
-                  placeholder="National ID or passport"
-                  value={data.id_number}
-                  onChange={e => setData('id_number', e.target.value)}
-                  error={errors.id_number}
-                  floating
-                />
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <Input
-                  label="Phone number"
-                  type="tel"
-                  placeholder="07XXXXXXXX"
-                  value={data.phone}
-                  onChange={e => setData('phone', e.target.value)}
-                  error={errors.phone}
-                  floating
-                />
-                <Select
-                  label="Purpose of visit"
-                  value={data.purpose}
-                  onChange={e => setData('purpose', e.target.value)}
-                  error={errors.purpose}
-                  className="rounded-xl"
-                >
-                  <option value="">Select purpose…</option>
-                  <option>Family visit</option>
-                  <option>Friend visit</option>
-                  <option>Delivery</option>
-                  <option>Plumber</option>
-                  <option>Electrician</option>
-                  <option>Contractor</option>
-                  <option>Other</option>
-                </Select>
-              </div>
-              <div className="grid sm:grid-cols-3 gap-4">
-                <Input
-                  label="Date"
-                  type="date"
-                  value={data.date}
-                  onChange={e => setData('date', e.target.value)}
-                  error={errors.date}
-                  floating
-                />
-                <Input
-                  label="Expected time in"
-                  type="time"
-                  value={data.time_in}
-                  onChange={e => setData('time_in', e.target.value)}
-                  error={errors.time_in}
-                  floating
-                />
-                <Input
-                  label="Expected time out"
-                  type="time"
-                  value={data.time_out}
-                  onChange={e => setData('time_out', e.target.value)}
-                  error={errors.time_out}
-                  floating
-                />
-              </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Visitor details</CardTitle>
+              <CardDescription>All fields are required for security purposes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full name</Label>
+                    <Input
+                      id="name"
+                      placeholder="e.g. James Mwangi"
+                      value={data.name}
+                      onChange={(e) => setData('name', e.target.value)}
+                    />
+                    {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="id_number">ID / Passport number</Label>
+                    <Input
+                      id="id_number"
+                      placeholder="National ID or passport"
+                      value={data.id_number}
+                      onChange={(e) => setData('id_number', e.target.value)}
+                    />
+                    {errors.id_number && (
+                      <p className="text-sm text-destructive">{errors.id_number}</p>
+                    )}
+                  </div>
+                </div>
 
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                <Button 
-                  type="submit" 
-                  variant="accent" 
-                  loading={processing} 
-                  className="flex-1 justify-center"
-                  size="lg"
-                >
-                  {processing ? 'Generating...' : 'Generate QR & invite'}
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  onClick={() => reset()}
-                  className="hover:bg-red-50 hover:text-red-600"
-                >
-                  Clear form
-                </Button>
-              </div>
-            </form>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="07XXXXXXXX"
+                      value={data.phone}
+                      onChange={(e) => setData('phone', e.target.value)}
+                    />
+                    {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="purpose">Purpose of visit</Label>
+                    <select
+                      id="purpose"
+                      value={data.purpose}
+                      onChange={(e) => setData('purpose', e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="">Select purpose...</option>
+                      <option>Family visit</option>
+                      <option>Friend visit</option>
+                      <option>Delivery</option>
+                      <option>Plumber</option>
+                      <option>Electrician</option>
+                      <option>Contractor</option>
+                      <option>Other</option>
+                    </select>
+                    {errors.purpose && (
+                      <p className="text-sm text-destructive">{errors.purpose}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Input
+                      id="date"
+                      type="date"
+                      value={data.date}
+                      onChange={(e) => setData('date', e.target.value)}
+                    />
+                    {errors.date && <p className="text-sm text-destructive">{errors.date}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="time_in">Expected time in</Label>
+                    <Input
+                      id="time_in"
+                      type="time"
+                      value={data.time_in}
+                      onChange={(e) => setData('time_in', e.target.value)}
+                    />
+                    {errors.time_in && (
+                      <p className="text-sm text-destructive">{errors.time_in}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="time_out">Expected time out</Label>
+                    <Input
+                      id="time_out"
+                      type="time"
+                      value={data.time_out}
+                      onChange={(e) => setData('time_out', e.target.value)}
+                    />
+                    {errors.time_out && (
+                      <p className="text-sm text-destructive">{errors.time_out}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-4 border-t">
+                  <Button type="submit" disabled={processing} className="flex-1">
+                    {processing ? 'Generating...' : 'Generate QR & invite'}
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={() => reset()}>
+                    Clear form
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
           </Card>
         </div>
 
         {/* QR Panel */}
         <div className="lg:col-span-2">
-          <Card className="sticky top-0 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-            <CardHeader 
-              title="Generated QR code" 
-              subtitle="Share this securely with your visitor" 
-            />
-            {qrGenerated ? (
-              <div className="space-y-4">
-                <div className="flex flex-col items-center gap-4 py-6 bg-gradient-to-br from-accent-bg to-white rounded-xl border border-accent/20">
-                  <div className="p-3 bg-white rounded-xl shadow-sm">
-                    <QRCode value={`${data.id_number}-${data.name}`} size={120} />
+          <Card className="sticky top-4">
+            <CardHeader>
+              <CardTitle>Generated QR code</CardTitle>
+              <CardDescription>Share this securely with your visitor</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {qrGenerated ? (
+                <div className="space-y-4">
+                  <div className="flex flex-col items-center gap-4 py-6 bg-muted/50 rounded-lg border">
+                    <div className="p-3 bg-background rounded-lg shadow-sm">
+                      <QRCodeSVG value={`${data.id_number}-${data.name}`} size={120} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold">{data.name}</p>
+                      <p className="text-xs text-muted-foreground">{data.purpose}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {data.time_in} - {data.time_out}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm font-bold text-gray-800" style={{ fontFamily: 'var(--font-display)' }}>{data.name}</p>
-                    <p className="text-xs text-gray-600">{data.purpose}</p>
-                    <p className="text-xs text-gray-400 mt-1">{data.time_in} – {data.time_out}</p>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  {smsSent
-                    ? <Alert type="success" className="animate-slide-down">
-                        <div className="flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                          </svg>
-                          SMS sent to {data.phone}
-                        </div>
-                      </Alert>
-                    : <Button variant="success" onClick={handleSendSms} className="w-full justify-center" size="lg">
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
+
+                  <div className="space-y-2">
+                    {smsSent ? (
+                      <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                        <CheckCircle className="size-4 shrink-0" />
+                        SMS sent to {data.phone}
+                      </div>
+                    ) : (
+                      <Button onClick={handleSendSms} className="w-full">
+                        <Send className="mr-2 size-4" />
                         Send QR via SMS
                       </Button>
-                  }
-                  <Button variant="outline" className="w-full justify-center hover:bg-accent-bg hover:border-accent">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    Copy shareable link
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-center text-gray-400 hover:text-gray-600" 
-                    onClick={() => window.print()}
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    Print QR code
-                  </Button>
+                    )}
+                    <Button variant="outline" className="w-full">
+                      <Copy className="mr-2 size-4" />
+                      Copy shareable link
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full"
+                      onClick={() => window.print()}
+                    >
+                      <Printer className="mr-2 size-4" />
+                      Print QR code
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center mb-4 transition-all duration-300 hover:border-accent hover:bg-accent-bg/20">
-                  <span className="text-3xl opacity-30 transition-opacity duration-200 hover:opacity-50">⬡</span>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="flex size-20 items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/20 mb-4">
+                    <QrCode className="size-8 text-muted-foreground/30" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Fill the form to generate a QR code
+                  </p>
+                  <p className="text-xs text-muted-foreground/70 mt-1 max-w-xs">
+                    The secure QR code will appear here once submitted
+                  </p>
                 </div>
-                <p className="text-sm font-medium text-gray-600">Fill the form to generate a QR code</p>
-                <p className="text-xs text-gray-400 mt-1.5 max-w-xs">The secure QR code will appear here once submitted</p>
-              </div>
-            )}
+              )}
+            </CardContent>
           </Card>
         </div>
       </div>

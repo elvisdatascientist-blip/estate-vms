@@ -1,136 +1,321 @@
 import React, { useState } from 'react';
-import { Link, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AppLayout, { PageHeader } from '@/components/layout/AppLayout';
-import { Card, Badge, Avatar, Button, Input, Select, Table, Modal, EmptyState, QRCode } from '@/components/ui';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+import { Plus, Search, QrCode, Trash2, Send, Copy, Users } from 'lucide-react';
+
+function StatusBadge({ status }) {
+  switch (status) {
+    case 'checked-in':
+      return (
+        <Badge variant="outline" className="text-emerald-600 border-emerald-300 bg-emerald-50">
+          checked in
+        </Badge>
+      );
+    case 'checked-out':
+      return <Badge variant="secondary">checked out</Badge>;
+    case 'pending':
+    default:
+      return (
+        <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
+          pending
+        </Badge>
+      );
+  }
+}
+
+/**
+ * Simple deterministic QR-like SVG pattern generator.
+ */
+function QRCodeSVG({ value, size = 140 }) {
+  const cells = 21;
+  const cellSize = size / cells;
+
+  let hash = 0;
+  const str = String(value || '');
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+
+  const grid = [];
+  for (let row = 0; row < cells; row++) {
+    for (let col = 0; col < cells; col++) {
+      const inTopLeft = row < 7 && col < 7;
+      const inTopRight = row < 7 && col >= cells - 7;
+      const inBottomLeft = row >= cells - 7 && col < 7;
+
+      let filled = false;
+      if (inTopLeft || inTopRight || inBottomLeft) {
+        const lr = inTopLeft ? row : inBottomLeft ? row - (cells - 7) : row;
+        const lc = inTopLeft ? col : inTopRight ? col - (cells - 7) : col;
+        filled =
+          lr === 0 || lr === 6 || lc === 0 || lc === 6 ||
+          (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
+      } else {
+        const seed = ((hash + row * 31 + col * 17) >>> 0) % 100;
+        filled = seed < 45;
+      }
+
+      if (filled) {
+        grid.push(
+          <rect
+            key={`${row}-${col}`}
+            x={col * cellSize}
+            y={row * cellSize}
+            width={cellSize}
+            height={cellSize}
+            fill="currentColor"
+          />
+        );
+      }
+    }
+  }
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="text-foreground"
+    >
+      {grid}
+    </svg>
+  );
+}
 
 export default function MyVisitors({ auth, visitors = [], filters = {} }) {
-  const [search, setSearch]   = useState(filters.search || '');
-  const [status, setStatus]   = useState(filters.status || '');
+  const [search, setSearch] = useState(filters.search || '');
+  const [status, setStatus] = useState(filters.status || '');
   const [qrModal, setQrModal] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
   const applyFilters = (newSearch, newStatus) => {
-    router.get('/tenant/visitors', { search: newSearch, status: newStatus }, { preserveState: true, replace: true });
+    router.get(
+      '/tenant/visitors',
+      { search: newSearch, status: newStatus },
+      { preserveState: true, replace: true }
+    );
   };
 
-  const handleSearch = (val) => { setSearch(val); applyFilters(val, status); };
-  const handleStatus = (val) => { setStatus(val); applyFilters(search, val); };
+  const handleSearch = (val) => {
+    setSearch(val);
+    applyFilters(val, status);
+  };
+
+  const handleStatus = (val) => {
+    setStatus(val);
+    applyFilters(search, val);
+  };
 
   const confirmDelete = () => {
-    router.delete(`/tenant/visitors/${deleteId}`, { onSuccess: () => setDeleteId(null) });
+    router.delete(`/tenant/visitors/${deleteId}`, {
+      onSuccess: () => setDeleteId(null),
+    });
   };
 
-  const columns = [
-    {
-      header: 'Visitor',
-      cell: (row) => (
-        <div className="flex items-center gap-2.5">
-          <Avatar name={row.name} size="sm" />
-          <div>
-            <p className="text-sm font-medium text-gray-800">{row.name}</p>
-            <p className="text-xs text-gray-400">{row.phone}</p>
-          </div>
-        </div>
-      ),
-    },
-    { header: 'ID Number', cell: (row) => <span className="text-sm font-mono text-gray-500">{row.id_number}</span> },
-    { header: 'Purpose',   cell: (row) => <span className="text-sm text-gray-600">{row.purpose}</span> },
-    {
-      header: 'Date & Time',
-      cell: (row) => (
-        <div>
-          <p className="text-sm text-gray-700">{row.date}</p>
-          <p className="text-xs text-gray-400">{row.time_in} – {row.time_out}</p>
-        </div>
-      ),
-    },
-    { header: 'Status', cell: (row) => <Badge variant={row.status}>{row.status.replace('-', ' ')}</Badge> },
-    {
-      header: '',
-      cell: (row) => (
-        <div className="flex items-center gap-2 justify-end">
-          <Button size="xs" variant="ghost" onClick={() => setQrModal(row)}>QR</Button>
-          <Button size="xs" variant="danger" onClick={() => setDeleteId(row.id)}>Remove</Button>
-        </div>
-      ),
-    },
-  ];
+  const getInitials = (name) =>
+    (name || 'U')
+      .split(' ')
+      .map((w) => w[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+
+  const selectClass =
+    'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
 
   return (
     <AppLayout user={auth.user} role="tenant">
+      <Head title="My Visitors" />
+
       <PageHeader
         title="My visitors"
         subtitle="View and manage all your invited guests"
         actions={
           <Link href="/tenant/invite">
-            <Button variant="primary" size="sm">+ New invite</Button>
+            <Button size="sm">
+              <Plus className="mr-2 size-4" />
+              New invite
+            </Button>
           </Link>
         }
       />
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        <Input
-          placeholder="Search by name or phone…"
-          value={search}
-          onChange={e => handleSearch(e.target.value)}
-          icon="🔍"
-          className="flex-1"
-        />
-        <Select
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name or phone..."
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <select
           value={status}
-          onChange={e => handleStatus(e.target.value)}
-          className="sm:w-44"
+          onChange={(e) => handleStatus(e.target.value)}
+          className={`${selectClass} sm:w-44`}
         >
           <option value="">All statuses</option>
           <option value="pending">Pending</option>
           <option value="checked-in">Checked in</option>
           <option value="checked-out">Checked out</option>
-        </Select>
+        </select>
       </div>
 
-      <Card padding={false}>
-        <Table
-          columns={columns}
-          data={visitors}
-          emptyState={
-            <EmptyState
-              icon="🔍"
-              title="No visitors found"
-              description="Try adjusting your filters or invite a new visitor."
-            />
-          }
-        />
+      <Card>
+        <CardContent className="p-0">
+          {visitors.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Users className="size-10 text-muted-foreground/30 mb-3" />
+              <p className="text-sm font-medium text-muted-foreground">No visitors found</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                Try adjusting your filters or invite a new visitor.
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Visitor</TableHead>
+                  <TableHead>ID Number</TableHead>
+                  <TableHead>Purpose</TableHead>
+                  <TableHead>Date & Time</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visitors.map((v) => (
+                  <TableRow key={v.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="size-8">
+                          <AvatarFallback className="text-xs bg-emerald-50 text-emerald-700">
+                            {getInitials(v.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">{v.name}</p>
+                          <p className="text-xs text-muted-foreground">{v.phone}</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm font-mono text-muted-foreground">
+                      {v.id_number}
+                    </TableCell>
+                    <TableCell className="text-sm">{v.purpose}</TableCell>
+                    <TableCell>
+                      <p className="text-sm">{v.date}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {v.time_in} - {v.time_out}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={v.status} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center gap-1 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => setQrModal(v)}
+                        >
+                          <QrCode className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => setDeleteId(v.id)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
       </Card>
 
       {/* QR Modal */}
-      <Modal open={!!qrModal} onClose={() => setQrModal(null)} title="Visitor QR code">
-        {qrModal && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="p-4 bg-gray-50 rounded-2xl">
-              <QRCode value={`${qrModal.id_number}-${qrModal.name}`} size={140} />
+      <Dialog open={!!qrModal} onOpenChange={(open) => !open && setQrModal(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Visitor QR Code</DialogTitle>
+            <DialogDescription>Show or share this code with your visitor</DialogDescription>
+          </DialogHeader>
+          {qrModal && (
+            <div className="flex flex-col items-center gap-4 py-2">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <QRCodeSVG value={`${qrModal.id_number}-${qrModal.name}`} size={140} />
+              </div>
+              <div className="text-center">
+                <p className="font-semibold">{qrModal.name}</p>
+                <p className="text-sm text-muted-foreground">{qrModal.purpose}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {qrModal.date} · {qrModal.time_in} - {qrModal.time_out}
+                </p>
+              </div>
+              <div className="flex gap-2 w-full">
+                <Button className="flex-1">
+                  <Send className="mr-2 size-4" />
+                  Send SMS
+                </Button>
+                <Button variant="outline" className="flex-1">
+                  <Copy className="mr-2 size-4" />
+                  Copy link
+                </Button>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="font-semibold text-gray-900">{qrModal.name}</p>
-              <p className="text-sm text-gray-500">{qrModal.purpose}</p>
-              <p className="text-xs text-gray-400">{qrModal.date} · {qrModal.time_in} – {qrModal.time_out}</p>
-            </div>
-            <div className="flex gap-2 w-full">
-              <Button variant="success" className="flex-1 justify-center">Send SMS</Button>
-              <Button variant="outline" className="flex-1 justify-center">Copy link</Button>
-            </div>
-          </div>
-        )}
-      </Modal>
+          )}
+        </DialogContent>
+      </Dialog>
 
-      {/* Delete confirm */}
-      <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Remove invitation" size="sm">
-        <p className="text-sm text-gray-600 mb-5">Are you sure you want to remove this visitor invitation? This cannot be undone.</p>
-        <div className="flex gap-3">
-          <Button variant="danger" onClick={confirmDelete} className="flex-1 justify-center">Yes, remove</Button>
-          <Button variant="ghost" onClick={() => setDeleteId(null)} className="flex-1 justify-center">Cancel</Button>
-        </div>
-      </Modal>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Remove invitation</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove this visitor invitation? This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="destructive" onClick={confirmDelete}>
+              Yes, remove
+            </Button>
+            <DialogClose asChild>
+              <Button variant="ghost">Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
