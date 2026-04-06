@@ -22,7 +22,7 @@ class AdminAnalyticsController extends Controller
         $base = Visitor::whereBetween('date', [$from, $to]);
 
         $hourly = (clone $base)
-            ->selectRaw("strftime('%H', COALESCE(arrived_at, date || ' ' || time_in)) as hr, COUNT(*) as count")
+            ->selectRaw("HOUR(COALESCE(arrived_at, CONCAT(date, ' ', time_in))) as hr, COUNT(*) as count")
             ->groupBy('hr')->orderBy('hr')->get()
             ->map(fn($r) => ['hour' => str_pad($r->hr, 2, '0', STR_PAD_LEFT).':00', 'count' => $r->count]);
 

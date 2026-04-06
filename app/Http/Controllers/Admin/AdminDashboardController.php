@@ -15,7 +15,7 @@ class AdminDashboardController extends Controller
         $today = now()->toDateString();
 
         $hourly = Visitor::whereDate('date', $today)
-            ->selectRaw("strftime('%H', arrived_at) as hr, COUNT(*) as count")
+            ->selectRaw("HOUR(arrived_at) as hr, COUNT(*) as count")
             ->whereNotNull('arrived_at')
             ->groupBy('hr')
             ->orderBy('hr')
