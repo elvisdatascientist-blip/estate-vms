@@ -31,8 +31,8 @@ class VisitorController extends Controller
     {
         $validated = $request->validate([
             'name'      => 'required|string|max:100',
-            'id_number' => 'required|string|max:30',
-            'phone'     => 'required|string|max:20',
+            'id_number' => 'required|string|max:30|regex:/^[A-Za-z0-9]+$/',
+            'phone'     => 'required|string|regex:/^[0-9]{10,13}$/',
             'purpose'   => 'required|string|max:100',
             'date'      => 'required|date|after_or_equal:today',
             'time_in'   => 'required|date_format:H:i',
@@ -45,12 +45,15 @@ class VisitorController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->back()->with('success', 'Visitor invited. QR code generated.');
+        return redirect()->back()->with([
+            'success' => 'Visitor invited. QR code generated.',
+            'visitor' => $visitor->only(['id', 'name', 'phone', 'purpose', 'date', 'time_in', 'time_out', 'token']),
+        ]);
     }
 
     public function sendSms(Request $request, Visitor $visitor, SmsService $sms)
     {
-        $message = "Hi {$visitor->name}, you are invited to visit GreenPark Estate.\n"
+        $message = "Hi {$visitor->name}, you are invited to visit SmartVisitor.\n"
                  . "Unit: {$visitor->tenant->unit}\n"
                  . "Date: {$visitor->date->format('d M Y')}, {$visitor->time_in}–{$visitor->time_out}\n"
                  . "Show this code at the gate: {$visitor->token}";

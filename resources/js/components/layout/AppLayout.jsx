@@ -81,10 +81,10 @@ function AppSidebar({ user, role }) {
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-bold text-sm">
-            GP
+            SV
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-sidebar-foreground">GreenPark</span>
+            <span className="text-sm font-semibold text-sidebar-foreground">SmartVisitor</span>
             <span className="text-[10px] uppercase tracking-widest text-sidebar-primary">
               {ROLE_LABELS[role] || role}
             </span>

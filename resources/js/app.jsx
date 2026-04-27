@@ -7,7 +7,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 createInertiaApp({
-  title: (title) => `${title} — GreenPark Estate`,
+  title: (title) => `${title} — SmartVisitor`,
 
   resolve: (name) =>
     resolvePageComponent(

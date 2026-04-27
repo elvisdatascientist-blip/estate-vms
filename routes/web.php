@@ -92,6 +92,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/reports/download', [AdminReportController::class, 'download'])->name('reports.download');
     Route::get('/guards',            [AdminGuardController::class, 'index'])->name('guards');
     Route::post('/guards',           [AdminGuardController::class, 'store'])->name('guards.store');
+    Route::patch('/guards/{guard}',  [AdminGuardController::class, 'update'])->name('guards.update');
     Route::delete('/guards/{guard}', [AdminGuardController::class, 'destroy'])->name('guards.destroy');
     Route::get('/incidents',                         [AdminIncidentController::class, 'index'])->name('incidents');
     Route::patch('/incidents/{incident}/resolve',    [AdminIncidentController::class, 'resolve'])->name('incidents.resolve');

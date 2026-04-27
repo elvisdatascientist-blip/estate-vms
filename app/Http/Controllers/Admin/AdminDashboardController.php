@@ -27,7 +27,7 @@ class AdminDashboardController extends Controller
                 'today'          => Visitor::whereDate('date', $today)->count(),
                 'inside'         => Visitor::whereDate('date', $today)->where('status', 'checked-in')->count(),
                 'open_incidents' => Incident::where('status', 'pending')->count(),
-                'guards'         => User::where('role', 'guard')->count(),
+                'guards'         => User::where('role', 'guard')->where('status', 'on-duty')->count(),
             ],
             'hourly'          => $hourly,
             'incidents'       => Incident::where('status', 'pending')->with('tenant')->latest()->take(4)->get()

@@ -1,77 +1,18 @@
-import React, { useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import AppLayout, { PageHeader } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Send, Copy, Printer, QrCode } from 'lucide-react';
-
-/**
- * Simple deterministic QR-like SVG pattern generator.
- * NOT a real QR code -- just a visual placeholder grid.
- */
-function QRCodeSVG({ value, size = 120 }) {
-  const cells = 21;
-  const cellSize = size / cells;
-
-  // Simple hash to create a deterministic pattern
-  let hash = 0;
-  const str = String(value || '');
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-  }
-
-  const grid = [];
-  for (let row = 0; row < cells; row++) {
-    for (let col = 0; col < cells; col++) {
-      // Fixed patterns for corners (finder patterns)
-      const inTopLeft = row < 7 && col < 7;
-      const inTopRight = row < 7 && col >= cells - 7;
-      const inBottomLeft = row >= cells - 7 && col < 7;
-
-      let filled = false;
-      if (inTopLeft || inTopRight || inBottomLeft) {
-        const lr = inTopLeft ? row : inBottomLeft ? row - (cells - 7) : row;
-        const lc = inTopLeft ? col : inTopRight ? col - (cells - 7) : col;
-        filled =
-          lr === 0 || lr === 6 || lc === 0 || lc === 6 ||
-          (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
-      } else {
-        const seed = ((hash + row * 31 + col * 17) >>> 0) % 100;
-        filled = seed < 45;
-      }
-
-      if (filled) {
-        grid.push(
-          <rect
-            key={`${row}-${col}`}
-            x={col * cellSize}
-            y={row * cellSize}
-            width={cellSize}
-            height={cellSize}
-            fill="currentColor"
-          />
-        );
-      }
-    }
-  }
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      className="text-foreground"
-    >
-      {grid}
-    </svg>
-  );
-}
+import QRCodeReact from 'react-qr-code';
 
 export default function InviteVisitor({ auth, flash = {} }) {
   const [qrGenerated, setQrGenerated] = useState(false);
   const [smsSent, setSmsSent] = useState(false);
+  const [visitorData, setVisitorData] = useState(null);
+  const { props } = usePage();
 
   const { data, setData, post, processing, errors, reset } = useForm({
     name: '',
@@ -83,10 +24,22 @@ export default function InviteVisitor({ auth, flash = {} }) {
     date: new Date().toISOString().slice(0, 10),
   });
 
+  useEffect(() => {
+    if (flash?.visitor) {
+      setVisitorData(flash.visitor);
+      setQrGenerated(true);
+    }
+  }, [flash]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     post('/tenant/visitors', {
-      onSuccess: () => setQrGenerated(true),
+      onSuccess: (page) => {
+        setQrGenerated(true);
+        if (page.props.flash?.visitor) {
+          setVisitorData(page.props.flash.visitor);
+        }
+      },
     });
   };
 
@@ -140,7 +93,8 @@ export default function InviteVisitor({ auth, flash = {} }) {
                       id="id_number"
                       placeholder="National ID or passport"
                       value={data.id_number}
-                      onChange={(e) => setData('id_number', e.target.value)}
+                      onChange={(e) => setData('id_number', e.target.value.replace(/[^A-Za-z0-9]/g, ''))}
+                      maxLength="30"
                     />
                     {errors.id_number && (
                       <p className="text-sm text-destructive">{errors.id_number}</p>
@@ -154,9 +108,11 @@ export default function InviteVisitor({ auth, flash = {} }) {
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="07XXXXXXXX"
+                      placeholder="07XXXXXXXX (10-13 digits)"
                       value={data.phone}
-                      onChange={(e) => setData('phone', e.target.value)}
+                      onChange={(e) => setData('phone', e.target.value.replace(/[^0-9]/g, ''))}
+                      maxLength="13"
+                      minLength="10"
                     />
                     {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
                   </div>
@@ -241,17 +197,20 @@ export default function InviteVisitor({ auth, flash = {} }) {
               <CardDescription>Share this securely with your visitor</CardDescription>
             </CardHeader>
             <CardContent>
-              {qrGenerated ? (
+              {qrGenerated && visitorData ? (
                 <div className="space-y-4">
                   <div className="flex flex-col items-center gap-4 py-6 bg-muted/50 rounded-lg border">
-                    <div className="p-3 bg-background rounded-lg shadow-sm">
-                      <QRCodeSVG value={`${data.id_number}-${data.name}`} size={120} />
+                    <div className="p-3 bg-white rounded-lg shadow-sm">
+                      <QRCodeReact value={visitorData.token || ''} size={140} />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm font-semibold">{data.name}</p>
-                      <p className="text-xs text-muted-foreground">{data.purpose}</p>
+                      <p className="text-sm font-semibold">{visitorData.name}</p>
+                      <p className="text-xs text-muted-foreground">{visitorData.purpose}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {data.time_in} - {data.time_out}
+                        {visitorData.time_in} - {visitorData.time_out}
+                      </p>
+                      <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+                        {visitorData.token?.substring(0, 16)}...
                       </p>
                     </div>
                   </div>

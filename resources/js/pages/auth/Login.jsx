@@ -19,7 +19,7 @@ export default function Login({ flash = {}, errors: serverErrors = {} }) {
 
   return (
     <>
-      <Head title="Sign in — GreenPark Estate" />
+      <Head title="Sign in — SmartVisitor Estate" />
 
       <div className="min-h-screen flex bg-muted/30">
         {/* Left panel — branding */}
@@ -31,9 +31,9 @@ export default function Login({ flash = {}, errors: serverErrors = {} }) {
           {/* Logo */}
           <div className="flex items-center gap-3 relative z-10">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm bg-primary-foreground text-primary">
-              GP
+              SV
             </div>
-            <span className="font-semibold text-sm">GreenPark Estate</span>
+            <span className="font-semibold text-sm">SmartVisitor Estate</span>
           </div>
 
           {/* Tagline & stats */}
@@ -61,7 +61,7 @@ export default function Login({ flash = {}, errors: serverErrors = {} }) {
           </div>
 
           <p className="text-primary-foreground/25 text-xs relative z-10">
-            &copy; {new Date().getFullYear()} GreenPark Estate Management. All rights reserved.
+            &copy; {new Date().getFullYear()} SmartVisitor Estate Management. All rights reserved.
           </p>
         </div>
 
@@ -71,9 +71,9 @@ export default function Login({ flash = {}, errors: serverErrors = {} }) {
             {/* Mobile logo */}
             <div className="flex items-center gap-3 mb-10 lg:hidden">
               <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold bg-primary text-primary-foreground">
-                GP
+                SV
               </div>
-              <span className="font-semibold text-foreground">GreenPark Estate</span>
+              <span className="font-semibold text-foreground">SmartVisitor Estate</span>
             </div>
 
             <Card>

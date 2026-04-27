@@ -22,21 +22,11 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  Users,
-  CalendarDays,
-  AlertTriangle,
-  CircleDot,
   Lock,
   LogOut,
   CheckCircle,
 } from 'lucide-react';
 
-const statCards = [
-  { key: 'total_visitors', label: 'Visitors invited', icon: Users, color: 'text-blue-600 bg-blue-50' },
-  { key: 'visitors_month', label: 'This month', icon: CalendarDays, color: 'text-emerald-600 bg-emerald-50' },
-  { key: 'total_incidents', label: 'Incidents reported', icon: AlertTriangle, color: 'text-amber-600 bg-amber-50' },
-  { key: 'open_incidents', label: 'Open incidents', icon: CircleDot, color: 'text-red-600 bg-red-50' },
-];
 
 export default function TenantProfile({ auth, stats = {}, flash = {} }) {
   const user = auth.user;
@@ -108,31 +98,12 @@ export default function TenantProfile({ auth, stats = {}, flash = {} }) {
                 <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
                   Unit {user.unit}
                 </span>
-                <span className="text-xs text-muted-foreground">GreenPark Estate · Tenant</span>
+                <span className="text-xs text-muted-foreground">SmartVisitor Estate · Tenant</span>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Activity Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {statCards.map(({ key, label, icon: Icon, color }) => (
-          <Card key={key}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`flex size-10 items-center justify-center rounded-lg ${color}`}>
-                  <Icon className="size-5" />
-                </div>
-                <div>
-                  <p className="text-2xl font-semibold tracking-tight">{stats[key] ?? 0}</p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Edit Profile */}
@@ -233,7 +204,7 @@ export default function TenantProfile({ auth, stats = {}, flash = {} }) {
                 onClick={() => router.post('/logout')}
               >
                 <LogOut className="mr-2 size-4" />
-                Sign out of GreenPark
+                Sign out of SmartVisitor
               </Button>
             </CardContent>
           </Card>

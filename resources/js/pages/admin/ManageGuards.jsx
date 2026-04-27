@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import AppLayout, { PageHeader } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,28 +23,70 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
-import { Plus, Shield } from 'lucide-react';
+import { Plus, Shield, Trash2 } from 'lucide-react';
 
 const nativeSelectClass = 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
 
 export default function ManageGuards({ auth, guards = [], flash = {} }) {
   const [open, setOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editingGuard, setEditingGuard] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  const { data, setData, post, processing, errors, reset } = useForm({
+  const { data, setData, post, patch, processing, errors, reset } = useForm({
     name: '',
     badge: '',
     phone: '',
     email: '',
     shift: 'Day (6am-6pm)',
+    password: '',
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    post('/admin/guards', {
-      onSuccess: () => {
-        reset();
-        setOpen(false);
-      },
+    if (editMode) {
+      patch(`/admin/guards/${editingGuard.id}`, {
+        onSuccess: () => {
+          reset();
+          setOpen(false);
+          setEditMode(false);
+          setEditingGuard(null);
+        },
+      });
+    } else {
+      post('/admin/guards', {
+        onSuccess: () => {
+          reset();
+          setOpen(false);
+        },
+      });
+    }
+  };
+
+  const openEditDialog = (guard) => {
+    setEditingGuard(guard);
+    setEditMode(true);
+    setData({
+      name: guard.name,
+      badge: guard.badge,
+      phone: guard.phone,
+      email: guard.email || '',
+      shift: guard.shift,
+      password: '',
+    });
+    setOpen(true);
+  };
+
+  const openCreateDialog = () => {
+    setEditMode(false);
+    setEditingGuard(null);
+    reset();
+    setOpen(true);
+  };
+
+  const handleDelete = (guardId) => {
+    router.delete(`/admin/guards/${guardId}`, {
+      onSuccess: () => setDeleteConfirm(null),
     });
   };
 
@@ -56,7 +98,7 @@ export default function ManageGuards({ auth, guards = [], flash = {} }) {
         title="Guards"
         subtitle="Manage estate security personnel"
         actions={
-          <Button onClick={() => setOpen(true)}>
+          <Button onClick={openCreateDialog}>
             <Plus className="size-4 mr-2" />
             Register guard
           </Button>
@@ -76,7 +118,7 @@ export default function ManageGuards({ auth, guards = [], flash = {} }) {
               <Shield className="size-8 mb-2" />
               <p className="text-sm font-medium">No guards registered</p>
               <p className="text-xs mt-1 mb-3">Register your first guard to get started.</p>
-              <Button size="sm" onClick={() => setOpen(true)}>
+              <Button size="sm" onClick={openCreateDialog}>
                 <Plus className="size-4 mr-1" />
                 Register guard
               </Button>
@@ -125,8 +167,17 @@ export default function ManageGuards({ auth, guards = [], flash = {} }) {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-2 justify-end">
-                          <Button size="sm" variant="ghost">Edit</Button>
-                          <Button size="sm" variant="destructive">Remove</Button>
+                          <Button size="sm" variant="ghost" onClick={() => openEditDialog(guard)}>
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => setDeleteConfirm(guard)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -138,12 +189,14 @@ export default function ManageGuards({ auth, guards = [], flash = {} }) {
         </CardContent>
       </Card>
 
-      {/* Register guard dialog */}
+      {/* Register/Edit guard dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Register new guard</DialogTitle>
-            <DialogDescription>Add a new security guard to the estate.</DialogDescription>
+            <DialogTitle>{editMode ? 'Edit guard' : 'Register new guard'}</DialogTitle>
+            <DialogDescription>
+              {editMode ? 'Update guard information.' : 'Add a new security guard to the estate.'}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
@@ -162,8 +215,9 @@ export default function ManageGuards({ auth, guards = [], flash = {} }) {
                 <Input
                   id="guard-badge"
                   value={data.badge}
-                  onChange={e => setData('badge', e.target.value)}
+                  onChange={e => setData('badge', e.target.value.replace(/[^A-Za-z0-9]/g, ''))}
                   placeholder="e.g. G004"
+                  maxLength="20"
                 />
                 {errors.badge && <p className="text-xs text-destructive">{errors.badge}</p>}
               </div>
@@ -175,8 +229,10 @@ export default function ManageGuards({ auth, guards = [], flash = {} }) {
                   id="guard-phone"
                   type="tel"
                   value={data.phone}
-                  onChange={e => setData('phone', e.target.value)}
-                  placeholder="07XXXXXXXX"
+                  onChange={e => setData('phone', e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="07XXXXXXXX (10-13 digits)"
+                  maxLength="13"
+                  minLength="10"
                 />
                 {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
               </div>
@@ -204,15 +260,52 @@ export default function ManageGuards({ auth, guards = [], flash = {} }) {
                 <option>Night (6pm-6am)</option>
               </select>
             </div>
+            {!editMode && (
+              <div className="space-y-2">
+                <Label htmlFor="guard-password">Password *</Label>
+                <Input
+                  id="guard-password"
+                  type="password"
+                  value={data.password}
+                  onChange={e => setData('password', e.target.value)}
+                  placeholder="Minimum 8 characters"
+                  minLength="8"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Guard can change this password after first login
+                </p>
+                {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+              </div>
+            )}
             <DialogFooter className="gap-2">
               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={processing}>
-                {processing ? 'Registering...' : 'Register guard'}
+                {processing ? (editMode ? 'Updating...' : 'Registering...') : (editMode ? 'Update guard' : 'Register guard')}
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Remove guard</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove {deleteConfirm?.name}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => setDeleteConfirm(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => handleDelete(deleteConfirm?.id)}>
+              Remove guard
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppLayout>

@@ -21,6 +21,7 @@ import {
   Plus,
   CheckCircle,
 } from 'lucide-react';
+import { formatDate, formatTime } from '@/lib/dateUtils';
 
 function StatusBadge({ status }) {
   switch (status) {
@@ -67,7 +68,7 @@ export default function TenantDashboard({ auth, visitors = [], stats = {}, notif
 
       <PageHeader
         title={`Good morning, ${auth.user.name.split(' ')[0]}`}
-        subtitle={`Unit ${auth.user.unit} · GreenPark Estate`}
+        subtitle={`Unit ${auth.user.unit} · SmartVisitor`}
         actions={
           <Link href="/tenant/invite">
             <Button size="lg">
@@ -110,11 +111,7 @@ export default function TenantDashboard({ auth, visitors = [], stats = {}, notif
           <div>
             <CardTitle>Today's visitors</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {new Date().toLocaleDateString('en-KE', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-              })}
+              {formatDate(new Date())}
             </p>
           </div>
           <Link href="/tenant/visitors">
@@ -168,13 +165,13 @@ export default function TenantDashboard({ auth, visitors = [], stats = {}, notif
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="size-3" />
-                        {v.time_in}
+                        {formatTime(v.time_in)}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="size-3" />
-                        {v.time_out}
+                        {formatTime(v.time_out)}
                       </div>
                     </TableCell>
                     <TableCell>

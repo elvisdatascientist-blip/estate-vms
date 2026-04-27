@@ -23,17 +23,17 @@ export default function Register({ flash = {} }) {
 
   return (
     <>
-      <Head title="Create account — GreenPark Estate" />
+      <Head title="Create account — SmartVisitor" />
 
       <div className="min-h-screen flex items-center justify-center p-5 bg-muted/30">
         <div className="w-full max-w-lg">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold mx-auto mb-5 bg-primary text-primary-foreground">
-              GP
+              SV
             </div>
             <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
-            <p className="text-sm text-muted-foreground mt-1.5">Join the GreenPark Estate resident portal</p>
+            <p className="text-sm text-muted-foreground mt-1.5">Join the SmartVisitor resident portal</p>
           </div>
 
           {flash.error && (
@@ -150,11 +150,6 @@ export default function Register({ flash = {} }) {
                       <p className="text-sm text-destructive">{errors.password_confirmation}</p>
                     )}
                   </div>
-                </div>
-
-                {/* Admin approval notice */}
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-800">
-                  Your account will require admin approval before you can invite visitors.
                 </div>
 
                 <Button type="submit" className="w-full" disabled={processing}>
