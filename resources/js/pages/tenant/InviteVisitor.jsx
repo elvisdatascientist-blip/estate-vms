@@ -8,11 +8,10 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Send, Copy, Printer, QrCode } from 'lucide-react';
 import QRCodeReact from 'react-qr-code';
 
-export default function InviteVisitor({ auth, flash = {} }) {
-  const [qrGenerated, setQrGenerated] = useState(false);
+export default function InviteVisitor({ auth, flash = {}, visitor = null }) {
+  const [qrGenerated, setQrGenerated] = useState(!!visitor);
   const [smsSent, setSmsSent] = useState(false);
-  const [visitorData, setVisitorData] = useState(null);
-  const { props } = usePage();
+  const [visitorData, setVisitorData] = useState(visitor);
 
   const { data, setData, post, processing, errors, reset } = useForm({
     name: '',
@@ -24,22 +23,10 @@ export default function InviteVisitor({ auth, flash = {} }) {
     date: new Date().toISOString().slice(0, 10),
   });
 
-  useEffect(() => {
-    if (flash?.visitor) {
-      setVisitorData(flash.visitor);
-      setQrGenerated(true);
-    }
-  }, [flash]);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     post('/tenant/visitors', {
-      onSuccess: (page) => {
-        setQrGenerated(true);
-        if (page.props.flash?.visitor) {
-          setVisitorData(page.props.flash.visitor);
-        }
-      },
+      preserveScroll: true,
     });
   };
 

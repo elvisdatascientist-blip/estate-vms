@@ -24,6 +24,8 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Plus, Search, QrCode, Trash2, Send, Copy, Users } from 'lucide-react';
+import { formatDate, formatTime } from '@/lib/dateUtils';
+import QRCodeReact from 'react-qr-code';
 
 function StatusBadge({ status }) {
   switch (status) {
@@ -43,65 +45,6 @@ function StatusBadge({ status }) {
         </Badge>
       );
   }
-}
-
-/**
- * Simple deterministic QR-like SVG pattern generator.
- */
-function QRCodeSVG({ value, size = 140 }) {
-  const cells = 21;
-  const cellSize = size / cells;
-
-  let hash = 0;
-  const str = String(value || '');
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
-  }
-
-  const grid = [];
-  for (let row = 0; row < cells; row++) {
-    for (let col = 0; col < cells; col++) {
-      const inTopLeft = row < 7 && col < 7;
-      const inTopRight = row < 7 && col >= cells - 7;
-      const inBottomLeft = row >= cells - 7 && col < 7;
-
-      let filled = false;
-      if (inTopLeft || inTopRight || inBottomLeft) {
-        const lr = inTopLeft ? row : inBottomLeft ? row - (cells - 7) : row;
-        const lc = inTopLeft ? col : inTopRight ? col - (cells - 7) : col;
-        filled =
-          lr === 0 || lr === 6 || lc === 0 || lc === 6 ||
-          (lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
-      } else {
-        const seed = ((hash + row * 31 + col * 17) >>> 0) % 100;
-        filled = seed < 45;
-      }
-
-      if (filled) {
-        grid.push(
-          <rect
-            key={`${row}-${col}`}
-            x={col * cellSize}
-            y={row * cellSize}
-            width={cellSize}
-            height={cellSize}
-            fill="currentColor"
-          />
-        );
-      }
-    }
-  }
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      className="text-foreground"
-    >
-      {grid}
-    </svg>
-  );
 }
 
 export default function MyVisitors({ auth, visitors = [], filters = {} }) {
@@ -228,9 +171,9 @@ export default function MyVisitors({ auth, visitors = [], filters = {} }) {
                     </TableCell>
                     <TableCell className="text-sm">{v.purpose}</TableCell>
                     <TableCell>
-                      <p className="text-sm">{v.date}</p>
+                      <p className="text-sm">{formatDate(v.date)}</p>
                       <p className="text-xs text-muted-foreground">
-                        {v.time_in} - {v.time_out}
+                        {formatTime(v.time_in)} - {formatTime(v.time_out)}
                       </p>
                     </TableCell>
                     <TableCell>
@@ -272,14 +215,14 @@ export default function MyVisitors({ auth, visitors = [], filters = {} }) {
           </DialogHeader>
           {qrModal && (
             <div className="flex flex-col items-center gap-4 py-2">
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <QRCodeSVG value={`${qrModal.id_number}-${qrModal.name}`} size={140} />
+              <div className="p-4 bg-white rounded-lg">
+                <QRCodeReact value={qrModal.token || ''} size={140} />
               </div>
               <div className="text-center">
                 <p className="font-semibold">{qrModal.name}</p>
                 <p className="text-sm text-muted-foreground">{qrModal.purpose}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {qrModal.date} · {qrModal.time_in} - {qrModal.time_out}
+                  {formatDate(qrModal.date)} · {formatTime(qrModal.time_in)} - {formatTime(qrModal.time_out)}
                 </p>
               </div>
               <div className="flex gap-2 w-full">

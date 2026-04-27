@@ -45,9 +45,9 @@ class VisitorController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->back()->with([
-            'success' => 'Visitor invited. QR code generated.',
+        return Inertia::render('tenant/InviteVisitor', [
             'visitor' => $visitor->only(['id', 'name', 'phone', 'purpose', 'date', 'time_in', 'time_out', 'token']),
+            'flash' => ['success' => 'Visitor invited. QR code generated.'],
         ]);
     }
 
