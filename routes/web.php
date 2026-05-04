@@ -64,17 +64,17 @@ Route::middleware(['auth', 'role:tenant'])->prefix('tenant')->name('tenant.')->g
             'visitors'     => $visitors->map(function($v) {
                 return [
                     'id' => $v->id,
-                    'name' => $v->name,
-                    'phone' => $v->phone,
-                    'purpose' => $v->purpose,
-                    'date' => $v->date ? ($v->date instanceof \Carbon\Carbon ? $v->date->toDateString() : $v->date) : null,
-                    'time_in' => $v->time_in,
-                    'time_out' => $v->time_out,
-                    'status' => $v->status,
-                    'arrived_at' => $v->arrived_at ? ($v->arrived_at instanceof \Carbon\Carbon ? $v->arrived_at->toDateTimeString() : $v->arrived_at) : null,
-                    'left_at' => $v->left_at ? ($v->left_at instanceof \Carbon\Carbon ? $v->left_at->toDateTimeString() : $v->left_at) : null,
+                    'name' => (string) $v->name,
+                    'phone' => (string) $v->phone,
+                    'purpose' => (string) $v->purpose,
+                    'date' => $v->date ? (is_object($v->date) ? $v->date->toDateString() : $v->date) : null,
+                    'time_in' => (string) $v->time_in,
+                    'time_out' => (string) $v->time_out,
+                    'status' => (string) $v->status,
+                    'arrived_at' => $v->arrived_at ? (is_object($v->arrived_at) ? $v->arrived_at->toDateTimeString() : $v->arrived_at) : null,
+                    'left_at' => $v->left_at ? (is_object($v->left_at) ? $v->left_at->toDateTimeString() : $v->left_at) : null,
                 ];
-            }),
+            })->values()->toArray(),
             'stats'        => [
                 'today'       => $visitors->count(),
                 'inside'      => $visitors->where('status', 'checked-in')->count(),
