@@ -30,6 +30,15 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
+/* ─── Health check for Railway ─────────────────────────────────── */
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now(),
+        'app' => config('app.name'),
+    ]);
+});
+
 /* ─── Landing page / Dashboard redirect ───────────────────────── */
 Route::get('/', function () {
     if (!auth()->check()) {
