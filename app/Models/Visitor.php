@@ -13,11 +13,8 @@ class Visitor extends Model
         'type','status','token','arrived_at','left_at',
     ];
 
-    protected $casts = [
-        'date'        => 'date',
-        'arrived_at'  => 'datetime',
-        'left_at'     => 'datetime',
-    ];
+    // Removed date casts to prevent Carbon objects in JSON
+    protected $casts = [];
 
     protected static function booted(): void
     {
