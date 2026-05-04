@@ -27,18 +27,20 @@ class VisitorController extends Controller
                     'phone' => $v->phone,
                     'id_number' => $v->id_number,
                     'purpose' => $v->purpose,
-                    'date' => $v->date ? ($v->date instanceof \Carbon\Carbon ? $v->date->toDateString() : $v->date) : null,
-                    'time_in' => $v->time_in,
-                    'time_out' => $v->time_out,
-                    'status' => $v->status,
-                    'token' => $v->token,
-                    'arrived_at' => $v->arrived_at ? ($v->arrived_at instanceof \Carbon\Carbon ? $v->arrived_at->toDateTimeString() : $v->arrived_at) : null,
-                    'left_at' => $v->left_at ? ($v->left_at instanceof \Carbon\Carbon ? $v->left_at->toDateTimeString() : $v->left_at) : null,
+                    'date' => $v->date ? (is_object($v->date) ? $v->date->toDateString() : $v->date) : null,
+                    'time_in' => (string) $v->time_in,
+                    'time_out' => (string) $v->time_out,
+                    'status' => (string) $v->status,
+                    'token' => (string) $v->token,
+                    'arrived_at' => $v->arrived_at ? (is_object($v->arrived_at) ? $v->arrived_at->toDateTimeString() : $v->arrived_at) : null,
+                    'left_at' => $v->left_at ? (is_object($v->left_at) ? $v->left_at->toDateTimeString() : $v->left_at) : null,
+                    'created_at' => $v->created_at ? $v->created_at->toDateTimeString() : null,
+                    'updated_at' => $v->updated_at ? $v->updated_at->toDateTimeString() : null,
                 ];
             });
 
         return Inertia::render('tenant/MyVisitors', [
-            'visitors' => $visitors,
+            'visitors' => $visitors->values()->toArray(),
             'filters'  => $request->only('search', 'status'),
         ]);
     }
