@@ -34,7 +34,8 @@ COPY . .
 ARG CACHEBUST
 RUN echo "Build timestamp: $CACHEBUST" && \
     rm -rf public/build node_modules/.vite .vite && \
-    npm run build -- --force && \
+    npm run build && \
+    echo "Build completed successfully" && \
     ls -la public/build/assets/ | head -10
 
 # Finish composer setup
