@@ -20,18 +20,22 @@ class VisitorController extends Controller
             ->when($request->status, fn($q, $s) => $q->where('status', $s))
             ->latest('date')
             ->get()
-            ->map(fn($v) => [
-                'id' => $v->id,
-                'name' => $v->name,
-                'phone' => $v->phone,
-                'id_number' => $v->id_number,
-                'purpose' => $v->purpose,
-                'date' => $v->date instanceof \Carbon\Carbon ? $v->date->toDateString() : $v->date,
-                'time_in' => $v->time_in,
-                'time_out' => $v->time_out,
-                'status' => $v->status,
-                'token' => $v->token,
-            ]);
+            ->map(function($v) {
+                return [
+                    'id' => $v->id,
+                    'name' => $v->name,
+                    'phone' => $v->phone,
+                    'id_number' => $v->id_number,
+                    'purpose' => $v->purpose,
+                    'date' => $v->date ? ($v->date instanceof \Carbon\Carbon ? $v->date->toDateString() : $v->date) : null,
+                    'time_in' => $v->time_in,
+                    'time_out' => $v->time_out,
+                    'status' => $v->status,
+                    'token' => $v->token,
+                    'arrived_at' => $v->arrived_at ? ($v->arrived_at instanceof \Carbon\Carbon ? $v->arrived_at->toDateTimeString() : $v->arrived_at) : null,
+                    'left_at' => $v->left_at ? ($v->left_at instanceof \Carbon\Carbon ? $v->left_at->toDateTimeString() : $v->left_at) : null,
+                ];
+            });
 
         return Inertia::render('tenant/MyVisitors', [
             'visitors' => $visitors,
@@ -58,7 +62,16 @@ class VisitorController extends Controller
         ]);
 
         return Inertia::render('tenant/InviteVisitor', [
-            'visitor' => $visitor->only(['id', 'name', 'phone', 'purpose', 'date', 'time_in', 'time_out', 'token']),
+            'visitor' => [
+                'id' => $visitor->id,
+                'name' => $visitor->name,
+                'phone' => $visitor->phone,
+                'purpose' => $visitor->purpose,
+                'date' => $visitor->date ? ($visitor->date instanceof \Carbon\Carbon ? $visitor->date->toDateString() : $visitor->date) : null,
+                'time_in' => $visitor->time_in,
+                'time_out' => $visitor->time_out,
+                'token' => $visitor->token,
+            ],
             'flash' => ['success' => 'Visitor invited. QR code generated.'],
         ]);
     }
