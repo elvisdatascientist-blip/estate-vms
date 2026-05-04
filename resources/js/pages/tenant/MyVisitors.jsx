@@ -171,9 +171,9 @@ export default function MyVisitors({ auth, visitors = [], filters = {} }) {
                     </TableCell>
                     <TableCell className="text-sm">{v.purpose}</TableCell>
                     <TableCell>
-                      <p className="text-sm">{formatDate(v.date)}</p>
+                      <p className="text-sm">{String(v.date || '').split('T')[0]}</p>
                       <p className="text-xs text-muted-foreground">
-                        {formatTime(v.time_in)} - {formatTime(v.time_out)}
+                        {String(v.time_in || '')} - {String(v.time_out || '')}
                       </p>
                     </TableCell>
                     <TableCell>
@@ -219,10 +219,10 @@ export default function MyVisitors({ auth, visitors = [], filters = {} }) {
                 <QRCodeReact value={qrModal.token || ''} size={140} />
               </div>
               <div className="text-center">
-                <p className="font-semibold">{qrModal.name}</p>
-                <p className="text-sm text-muted-foreground">{qrModal.purpose}</p>
+                <p className="font-semibold">{String(qrModal.name || '')}</p>
+                <p className="text-sm text-muted-foreground">{String(qrModal.purpose || '')}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {formatDate(qrModal.date)} · {formatTime(qrModal.time_in)} - {formatTime(qrModal.time_out)}
+                  {String(qrModal.date || '').split('T')[0]} · {String(qrModal.time_in || '')} - {String(qrModal.time_out || '')}
                 </p>
               </div>
               <div className="flex gap-2 w-full">
