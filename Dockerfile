@@ -25,11 +25,11 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Install JS dependencies
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci --legacy-peer-deps
 
 # Copy app source and build frontend
 COPY . .
-RUN npm run build
+RUN rm -rf public/build && npm run build
 
 # Finish composer setup
 RUN composer dump-autoload --optimize
@@ -44,4 +44,4 @@ RUN mkdir -p storage/logs \
 
 EXPOSE ${PORT:-8080}
 
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+CMD php artisan config:cache && php artisan route:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
