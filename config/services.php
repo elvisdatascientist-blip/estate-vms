@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'africastalking' => [
+        'api_key' => env('AFRICASTALKING_API_KEY'),
+        'username' => env('AFRICASTALKING_USERNAME', 'sandbox'),
+        'from' => env('AFRICASTALKING_FROM', 'SmartVisitor'),
+    ],
+
 ];

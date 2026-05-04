@@ -27,6 +27,13 @@ export default function InviteVisitor({ auth, flash = {}, visitor = null }) {
     e.preventDefault();
     post('/tenant/visitors', {
       preserveScroll: true,
+      onSuccess: (page) => {
+        // Update visitor data from response to show QR code
+        if (page.props.visitor) {
+          setVisitorData(page.props.visitor);
+          setQrGenerated(true);
+        }
+      },
     });
   };
 

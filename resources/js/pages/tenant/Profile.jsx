@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 
 
-export default function TenantProfile({ auth, stats = {}, flash = {} }) {
+export default function TenantProfile({ auth, flash = {} }) {
   const user = auth.user;
   const [passwordModal, setPasswordModal] = useState(false);
 

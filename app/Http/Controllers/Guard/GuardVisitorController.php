@@ -108,9 +108,8 @@ class GuardVisitorController extends Controller
     {
         $visitor->update(['status' => 'checked-in', 'arrived_at' => now()]);
 
-        $sms->send($visitor->tenant->phone,
-            "Your visitor {$visitor->name} has been checked in at the gate and is heading to Unit {$visitor->tenant->unit}."
-        );
+        // Send arrival notification to tenant
+        $sms->notifyVisitorArrival($visitor);
 
         return redirect()->back()->with('success', "{$visitor->name} checked in.");
     }

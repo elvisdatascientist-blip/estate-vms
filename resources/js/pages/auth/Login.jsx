@@ -120,17 +120,22 @@ export default function Login({ flash = {}, errors: serverErrors = {} }) {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <input
-                      id="remember"
-                      type="checkbox"
-                      checked={data.remember}
-                      onChange={(e) => setData('remember', e.target.checked)}
-                      className="h-4 w-4 rounded border-input accent-primary"
-                    />
-                    <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">
-                      Remember me
-                    </Label>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="remember"
+                        type="checkbox"
+                        checked={data.remember}
+                        onChange={(e) => setData('remember', e.target.checked)}
+                        className="h-4 w-4 rounded border-input accent-primary"
+                      />
+                      <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer">
+                        Remember me
+                      </Label>
+                    </div>
+                    <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+                      Forgot password?
+                    </Link>
                   </div>
 
                   <Button type="submit" className="w-full" disabled={processing}>

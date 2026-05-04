@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Tenant\VisitorController;
 use App\Http\Controllers\Tenant\IncidentController;
 use App\Http\Controllers\Tenant\ProfileController;
@@ -20,19 +21,26 @@ Route::middleware('guest')->group(function () {
     Route::post('/login',   [AuthenticatedSessionController::class, 'store']);
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
     Route::post('/register',[RegisteredUserController::class, 'store']);
+
+    Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'resetForm'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
 });
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-/* ─── Redirect after login based on role ───────────────────────── */
+/* ─── Landing page / Dashboard redirect ───────────────────────── */
 Route::get('/', function () {
-    if (!auth()->check()) return redirect('/login');
+    if (!auth()->check()) {
+        return Inertia::render('Landing');
+    }
     return match(auth()->user()->role) {
         'guard' => redirect('/guard/dashboard'),
         'admin' => redirect('/admin/dashboard'),
         default => redirect('/tenant/dashboard'),
     };
-})->middleware('auth');
+});
 
 /* ═══════════════════════════════════════════════════════════════
    TENANT ROUTES

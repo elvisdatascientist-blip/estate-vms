@@ -36,6 +36,7 @@ class AdminGuardController extends Controller
             'email'    => $validated['email'],
             'shift'    => $validated['shift'],
             'role'     => 'guard',
+            'status'   => 'on-duty',
             'password' => Hash::make($validated['password']),
         ]);
 
