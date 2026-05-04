@@ -30,7 +30,7 @@ RUN npm ci --legacy-peer-deps
 
 # Copy app source and build frontend
 COPY . .
-RUN rm -rf public/build && npm run build
+RUN rm -rf public/build node_modules/.vite && npm run build && ls -la public/build/assets/ | head -10
 
 # Finish composer setup
 RUN composer dump-autoload --optimize
