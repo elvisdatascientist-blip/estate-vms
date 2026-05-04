@@ -1,4 +1,5 @@
 FROM php:8.3-cli
+# Cache buster: 2026-05-04-v2
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
