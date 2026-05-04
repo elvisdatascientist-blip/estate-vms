@@ -94,7 +94,7 @@ export default function MyVisitors({ auth, visitors = [], filters = {} }) {
 
       <PageHeader
         title="My visitors"
-        subtitle="View and manage all your invited guests"
+        subtitle="View and manage all your invited guests (Updated v2)"
         actions={
           <Link href="/tenant/invite">
             <Button size="sm">
