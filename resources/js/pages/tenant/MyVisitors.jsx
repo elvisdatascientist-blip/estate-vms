@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/dialog';
 import { Plus, Search, QrCode, Trash2, Send, Copy, Users } from 'lucide-react';
 import { formatDate, formatTime } from '@/lib/dateUtils';
-import QRCodeReact from 'react-qr-code';
 
 function StatusBadge({ status }) {
   switch (status) {
@@ -216,7 +215,13 @@ export default function MyVisitors({ auth, visitors = [], filters = {} }) {
           {qrModal && (
             <div className="flex flex-col items-center gap-4 py-2">
               <div className="p-4 bg-white rounded-lg">
-                <QRCodeReact value={qrModal.token || ''} size={140} />
+                <img
+                  src={`/qr/${qrModal.token}`}
+                  alt="Visitor QR Code"
+                  width="140"
+                  height="140"
+                  className="rounded"
+                />
               </div>
               <div className="text-center">
                 <p className="font-semibold">{String(qrModal.name || '')}</p>

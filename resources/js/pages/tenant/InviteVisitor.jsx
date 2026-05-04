@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Send, Copy, Printer, QrCode } from 'lucide-react';
-import QRCodeReact from 'react-qr-code';
 
 export default function InviteVisitor({ auth, flash = {}, visitor = null }) {
   const [qrGenerated, setQrGenerated] = useState(!!visitor);
@@ -205,7 +204,13 @@ export default function InviteVisitor({ auth, flash = {}, visitor = null }) {
                 <div className="space-y-4">
                   <div className="flex flex-col items-center gap-4 py-6 bg-muted/50 rounded-lg border">
                     <div className="p-3 bg-white rounded-lg shadow-sm">
-                      <QRCodeReact value={visitorData.token || ''} size={140} />
+                      <img
+                        src={`/qr/${visitorData.token}`}
+                        alt="Visitor QR Code"
+                        width="140"
+                        height="140"
+                        className="rounded"
+                      />
                     </div>
                     <div className="text-center">
                       <p className="text-sm font-semibold">{visitorData.name}</p>

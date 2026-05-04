@@ -36,10 +36,23 @@ Route::get('/health', function () {
         'status' => 'ok',
         'timestamp' => now(),
         'app' => config('app.name'),
-        'version' => 'v2.1-fix-objects',
+        'version' => 'v3.0-qr-fix',
         'commit' => exec('git rev-parse --short HEAD 2>&1') ?: 'unknown',
     ]);
 });
+
+/* ─── QR Code Image Generator ──────────────────────────────────── */
+Route::get('/qr/{token}', function ($token) {
+    $writer = new \Endroid\QrCode\Writer\PngWriter();
+    $qrCode = \Endroid\QrCode\QrCode::create($token)
+        ->setSize(300)
+        ->setMargin(10);
+
+    $result = $writer->write($qrCode);
+
+    return response($result->getString())
+        ->header('Content-Type', 'image/png');
+})->name('qr.image');
 
 /* ─── Landing page / Dashboard redirect ───────────────────────── */
 Route::get('/', function () {
