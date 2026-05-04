@@ -19,7 +19,19 @@ class VisitorController extends Controller
             )
             ->when($request->status, fn($q, $s) => $q->where('status', $s))
             ->latest('date')
-            ->get();
+            ->get()
+            ->map(fn($v) => [
+                'id' => $v->id,
+                'name' => $v->name,
+                'phone' => $v->phone,
+                'id_number' => $v->id_number,
+                'purpose' => $v->purpose,
+                'date' => $v->date instanceof \Carbon\Carbon ? $v->date->toDateString() : $v->date,
+                'time_in' => $v->time_in,
+                'time_out' => $v->time_out,
+                'status' => $v->status,
+                'token' => $v->token,
+            ]);
 
         return Inertia::render('tenant/MyVisitors', [
             'visitors' => $visitors,
