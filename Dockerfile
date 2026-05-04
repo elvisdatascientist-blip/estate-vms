@@ -23,7 +23,8 @@ WORKDIR /app
 
 # Install PHP dependencies
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+RUN composer update endroid/qr-code --no-dev --optimize-autoloader --no-scripts || \
+    composer install --no-dev --optimize-autoloader --no-scripts
 
 # Install JS dependencies
 COPY package.json package-lock.json ./
