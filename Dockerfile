@@ -1,5 +1,6 @@
 FROM php:8.3-cli
-# Cache buster: 2026-05-04-v2
+# Build timestamp to force rebuild
+ARG CACHEBUST=1
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -30,7 +31,11 @@ RUN npm ci --legacy-peer-deps
 
 # Copy app source and build frontend
 COPY . .
-RUN rm -rf public/build node_modules/.vite && npm run build && ls -la public/build/assets/ | head -10
+ARG CACHEBUST
+RUN echo "Build timestamp: $CACHEBUST" && \
+    rm -rf public/build node_modules/.vite .vite && \
+    npm run build -- --force && \
+    ls -la public/build/assets/ | head -10
 
 # Finish composer setup
 RUN composer dump-autoload --optimize
