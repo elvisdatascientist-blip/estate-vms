@@ -5,7 +5,8 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "heroku-postbuild": "npm run build"
+        "heroku-postbuild": "npm run build",
+        "rebuild": "rm -rf public/build && vite build"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.2.2",

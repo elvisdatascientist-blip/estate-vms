@@ -27,7 +27,7 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Install JS dependencies
 COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps
+RUN npm ci --legacy-peer-deps && npm cache clean --force
 
 # Copy app source and build frontend
 COPY . .
