@@ -80,9 +80,10 @@ class VisitorController extends Controller
 
     public function sendSms(Request $request, Visitor $visitor, SmsService $sms)
     {
+        $date = \Carbon\Carbon::parse($visitor->date)->format('d M Y');
         $message = "Hi {$visitor->name}, you are invited to visit SmartVisitor.\n"
                  . "Unit: {$visitor->tenant->unit}\n"
-                 . "Date: {$visitor->date->format('d M Y')}, {$visitor->time_in}–{$visitor->time_out}\n"
+                 . "Date: {$date}, {$visitor->time_in}–{$visitor->time_out}\n"
                  . "Show this code at the gate: {$visitor->token}";
 
         $sms->send($visitor->phone, $message);
