@@ -36,6 +36,8 @@ Route::get('/health', function () {
         'status' => 'ok',
         'timestamp' => now(),
         'app' => config('app.name'),
+        'version' => 'v2.1-fix-objects',
+        'commit' => exec('git rev-parse --short HEAD 2>&1') ?: 'unknown',
     ]);
 });
 
