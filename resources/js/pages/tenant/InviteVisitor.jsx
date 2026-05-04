@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage, router } from '@inertiajs/react';
 import AppLayout, { PageHeader } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,17 @@ export default function InviteVisitor({ auth, flash = {}, visitor = null }) {
   };
 
   const handleSendSms = () => {
-    setSmsSent(true);
+    if (!visitorData || !visitorData.id) return;
+
+    router.post(`/tenant/visitors/${visitorData.id}/send-sms`, {}, {
+      preserveScroll: true,
+      onSuccess: () => {
+        setSmsSent(true);
+      },
+      onError: (errors) => {
+        alert('Failed to send SMS: ' + (errors.message || 'Unknown error'));
+      }
+    });
   };
 
   const selectClass =

@@ -61,7 +61,16 @@ Route::middleware(['auth', 'role:tenant'])->prefix('tenant')->name('tenant.')->g
         $today    = now()->toDateString();
         $visitors = $user->visitors()->whereDate('date', $today)->latest()->get();
         return Inertia::render('tenant/Dashboard', [
-            'visitors'     => $visitors,
+            'visitors'     => $visitors->map(fn($v) => [
+                'id' => $v->id,
+                'name' => $v->name,
+                'phone' => $v->phone,
+                'purpose' => $v->purpose,
+                'date' => $v->date instanceof \Carbon\Carbon ? $v->date->toDateString() : $v->date,
+                'time_in' => $v->time_in,
+                'time_out' => $v->time_out,
+                'status' => $v->status,
+            ]),
             'stats'        => [
                 'today'       => $visitors->count(),
                 'inside'      => $visitors->where('status', 'checked-in')->count(),
